@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import argparse
 import urllib2
 from urllib import urlencode
+import ConfigParser
+import os.path
 
 def create_arg_parser(description):
     """
@@ -22,7 +24,7 @@ class LPAPI(object):
     LiquidPlanner API class
     """
     def __init__(self, username, password, workspace):
-        self.uri = 'https://app.liquidplanner.com/api/workspaces/%d/' \
+        self.uri = 'https://app.liquidplanner.com/api/workspaces/%s/' \
             % workspace
 
         auth_handler = urllib2.HTTPBasicAuthHandler()
@@ -54,18 +56,35 @@ class LPAPI(object):
         return tasks
 
 
-def tasks():
+def lptools():
     """
     show all tasks not updated since a given date
     """
+    config = ConfigParser.ConfigParser()
+    config.read([os.path.expanduser('~/.lptools')])
+
+    try:
+        username = config.get('lptools', 'username')
+        password = config.get('lptools', 'password')
+        workspace = config.get('lptools', 'workspace')
+    except ConfigParser.Error:
+        print >>sys.stderr, """\
+Please create ~/.lptools with the following info:
+
+[lptools]
+username = <your LP username>
+password = <your LP password>
+workspace = <your workspace>
+"""
+        sys.exit(1)
+
     parser = create_arg_parser("Show tasks in LiquidPlanner according to "
                                "various criteria")
     parser.add_argument('-d', '--days', type=int,
                         help="The number of days since task was updated",
                         required=True)
     parser.add_argument('-w', '--workspace', type=int,
-                        help="Liquidplanner Workspace",
-                        required=True)
+                        help="Liquidplanner Workspace")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-u', '--updated', action='store_true',
                        help="Show tasks that were updated in the last N days")
@@ -74,9 +93,9 @@ def tasks():
     args = parser.parse_args()
     since = datetime.now() - timedelta(days=args.days)
 
-    lp = LPAPI(username='vz@aihit.com',
-               password='r0Ytf4oMyB',
-               workspace=args.workspace)
+    lp = LPAPI(username=username,
+               password=password,
+               workspace=workspace)
 
     members = lp.members()
     tasks = lp.tasks()

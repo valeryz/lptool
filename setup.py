@@ -12,5 +12,5 @@ setup(name='lptools',
       py_modules=['lptools'],
       install_requires=dependencies,
       entry_points={
-        'console_scripts' : ['lptasks = lptools:tasks']
+        'console_scripts' : ['lptools = lptools:lptools']
         })
