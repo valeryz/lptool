@@ -1,0 +1,10 @@
+.ropeproject/
+bin/
+include/
+lib/
+local/
+lptools.egg-info/
+*~
+*.egg-info/
+*.pyc
+*.pyo
